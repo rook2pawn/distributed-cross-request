@@ -8,9 +8,8 @@ const asyncTask_1 = () => {
 };
 
 let callNumber = 0;
-const distributed = [];
+let distributed = [];
 const server = http.createServer(async (req, res) => {
-  console.log("req url:", req.url);
   switch (req.url) {
     case "/":
       callNumber++;
@@ -28,6 +27,7 @@ const server = http.createServer(async (req, res) => {
     case "/distributed":
       callNumber++;
       console.log("Distributed Incoming call:", callNumber);
+      await asyncTask_1();
       req.setEncoding("utf8");
       let rawData = "";
       req.on("data", (chunk) => {
@@ -35,8 +35,8 @@ const server = http.createServer(async (req, res) => {
       });
       req.on("end", () => {
         try {
-          const parsedData = JSON.parse(rawData);
-          distributed.push({ data: parsedData, url: req.url, res });
+          const { number, text } = JSON.parse(rawData);
+          distributed.push({ number, text, url: req.url, res });
         } catch (e) {
           console.error(e.message);
         }
@@ -49,16 +49,21 @@ const server = http.createServer(async (req, res) => {
 
 setInterval(() => {
   console.log(`beginning interval task. Tasks remaining ${distributed.length}`);
-  distributed.forEach(({ res, data, url }) => {
+  const working = [...distributed];
+  distributed = [];
+  let count = 0;
+  working.forEach(({ res, number, text, url }) => {
+    count++;
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(
       JSON.stringify({
-        data: "Distributed Hello World!",
-        echoedData: JSON.stringify(data),
-        callNumber,
+        number: number * 2,
+        text: text.toUpperCase(),
+        count,
       })
     );
   });
+  if (count > 0) console.log(`Finished replying to ${count} tasks.`);
 }, 3000);
 
 server.listen(port, () => {

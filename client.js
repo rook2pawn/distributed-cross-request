@@ -4,7 +4,7 @@ const { resolve } = require("path");
 
 const port = 8000;
 
-const postRequest = (postData) => {
+const postRequest = (postData = { number: 2, text: "foobar" }) => {
   return new Promise((resolve, reject) => {
     postData = JSON.stringify(postData);
     const options = {
@@ -34,15 +34,24 @@ const postRequest = (postData) => {
 
     // Write data to request body
     req.write(postData);
-    console.log("WROTE POST DATA:", postData);
     req.end();
   });
 };
 
-const calls = Array(3).fill(postRequest);
-calls.forEach(async (call) => {
-  const response = await call();
-  console.log("RESPONSE:", response);
+const calls = Array(100).fill(postRequest);
+const responses = [];
+calls.forEach(async (call, idx) => {
+  const response = await call({ number: idx, text: "foobar" });
+  responses.push(response);
+  if (idx == calls.length - 1) {
+    console.log(responses.length);
+    responses.reduce(async (prev, curr) => {
+      return prev.then((value) => {
+        console.log("value:", value);
+        return curr;
+      });
+    }, Promise.resolve());
+  }
 });
 
 /*

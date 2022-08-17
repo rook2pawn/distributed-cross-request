@@ -40,13 +40,12 @@ const postRequest = (postData) => {
 };
 
 const calls = Array(3).fill(postRequest);
-/*
 calls.forEach(async (call) => {
   const response = await call();
   console.log("RESPONSE:", response);
 });
-*/
 
+/*
 calls.reduce((prev, curr) => {
   return prev.then(async () => {
     const response = await curr({ foo: "bar" }).catch((error) => {
@@ -57,3 +56,4 @@ calls.reduce((prev, curr) => {
     return Promise.resolve(response);
   });
 }, Promise.resolve());
+*/

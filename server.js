@@ -36,28 +36,30 @@ const server = http.createServer(async (req, res) => {
       req.on("end", () => {
         try {
           const parsedData = JSON.parse(rawData);
-          console.log(parsedData);
-          distributed.push({ data: parsedData, url: req.url });
+          distributed.push({ data: parsedData, url: req.url, res });
         } catch (e) {
           console.error(e.message);
         }
       });
-      await asyncTask_1();
-      console.log("done with async task");
-      console.log("DISTRIBUTED:", distributed);
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(
-        JSON.stringify({
-          data: "Distributed Hello World!",
-          callNumber,
-        })
-      );
       break;
-
     default:
       break;
   }
 });
+
+setInterval(() => {
+  console.log(`beginning interval task. Tasks remaining ${distributed.length}`);
+  distributed.forEach(({ res, data, url }) => {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        data: "Distributed Hello World!",
+        echoedData: JSON.stringify(data),
+        callNumber,
+      })
+    );
+  });
+}, 3000);
 
 server.listen(port, () => {
   console.log(`backend server listening on ${port}`);
